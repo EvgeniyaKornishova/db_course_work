@@ -1,6 +1,14 @@
 from backend.database import Base
-from sqlalchemy import (Column, Date, DateTime, Float, ForeignKey, Integer,
-                        Interval, String)
+from sqlalchemy import (
+    Column,
+    Date,
+    DateTime,
+    Float,
+    ForeignKey,
+    Integer,
+    Interval,
+    String,
+)
 from sqlalchemy.orm import relationship
 
 
@@ -53,7 +61,9 @@ class ShoppingList(Base):
     __tablename__ = "список_покупок"
     id = Column("id_списка_покупок", Integer, primary_key=True)
     name = Column("название", String)
-    user_id = Column("id_пользователя", Integer, ForeignKey("пользователь.id_пользователя"))
+    user_id = Column(
+        "id_пользователя", Integer, ForeignKey("пользователь.id_пользователя")
+    )
 
     shopping = relationship("Shopping", back_populates="shopping_list")
 
@@ -67,7 +77,7 @@ class Activity(Base):
     period = Column("периодичность", Interval, nullable=True)
     format = Column("формат", String)
     stress_points = Column("влияние_на_уровень_стресса", Integer)
-    completed = Column("готовность", String)
+    completed = Column("готовность", String, default="не выполнено")
     location_id = Column(
         "id_локации", Integer, ForeignKey("локация.id_локации"), nullable=True
     )
