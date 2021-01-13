@@ -8,16 +8,3 @@ class User(BaseModel):
 
     class Config:
         orm_mode = True
-
-
-class CredentialBase(BaseModel):
-    login: str
-
-
-class CredentialIn(CredentialBase):
-    password: str
-
-
-class CredentialOut(CredentialBase):
-    user_id: str
-    password: str

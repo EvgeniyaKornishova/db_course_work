@@ -3,7 +3,7 @@ from hashlib import sha256
 import jwt
 from backend.database import get_db
 from backend.models import Credentials, User
-from backend.schemas import CredentialIn
+from backend.schemas.credentials import CredentialIn
 from fastapi import APIRouter, Depends, HTTPException, status
 from sqlalchemy.exc import IntegrityError
 from sqlalchemy.orm import Session

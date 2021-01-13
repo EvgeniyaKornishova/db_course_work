@@ -21,3 +21,15 @@ class Credentials(Base):
     password = Column(String)
 
     user = relationship("User")
+
+
+class Location(Base):
+    __tablename__ = "локация"
+
+    id = Column("id_локации", Integer, primary_key=True)
+    name = Column("название", String)
+    user_id = Column(
+        "id_пользователя", Integer, ForeignKey("пользователь.id_пользователя")
+    )
+
+    user = relationship("User")
