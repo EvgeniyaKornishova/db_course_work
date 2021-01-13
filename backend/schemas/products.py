@@ -1,8 +1,31 @@
-class Products(Base):
-    id = Column("id_товара", Integer, primary_key=True)
-    name = Column("наименование", String)
-    price = Column("стоимость", Float)
-    amount = Column("количество", Integer)
-    deadline = Column("срочность_покупки", Date)
-    approved = Column("подтвержден", String)
-    shop_list_id = Column("id_списка_покупок", Integer)
+from datetime import datetime
+from typing import Optional
+
+from pydantic import BaseModel
+
+
+class ProductsOut(BaseModel):
+    id: int
+    name: str
+    price: float
+    amount: int
+    deadline: datetime
+    approved: str
+    shopping_list_id: int
+
+
+class ProductsIn(BaseModel):
+    name: str
+    price: float
+    amount: int
+    deadline: datetime
+    shopping_list_id: int
+
+
+class ProductsUpdate(BaseModel):
+    name: Optional[str] = None
+    price: Optional[float] = None
+    amount: Optional[int] = None
+    deadline: Optional[datetime] = None
+    approved: Optional[str] = None
+    shopping_list_id: Optional[int] = None

@@ -22,6 +22,7 @@ def signup(cred: CredentialIn, db: Session = Depends(get_db)):
     db_user = User()
 
     hashed_password = sha256(cred.password.encode()).hexdigest()
+    cred.login = cred.login.strip()
 
     db_cred = Credentials(login=cred.login, password=hashed_password, user=db_user)
 
@@ -42,6 +43,7 @@ def signup(cred: CredentialIn, db: Session = Depends(get_db)):
 def auth(cred: CredentialIn, db: Session = Depends(get_db)):
 
     hashed_password = sha256(cred.password.encode()).hexdigest()
+    cred.login = cred.login.strip()
 
     db_cred = (
         db.query(Credentials)

@@ -42,5 +42,5 @@ class Products(Base):
     price = Column("стоимость", Float)
     amount = Column("количество", Integer)
     deadline = Column("срочность_покупки", Date)
-    approved = Column("подтвержден", String)
-    shop_list_id = Column("id_списка_покупок", Integer)
+    approved = Column("подтверждение", String, default="не подтвержден")
+    shopping_list_id = Column("id_списка_покупок", Integer)

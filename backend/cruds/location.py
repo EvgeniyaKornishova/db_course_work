@@ -28,3 +28,4 @@ def delete(db: Session, location_id: int) -> None:
     # TODO: Add check on activity
 
     db.query(Location).filter(Location.id == location_id).delete()
+    db.commit()
