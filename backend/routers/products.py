@@ -1,6 +1,6 @@
 from backend.cruds import product as products_cruds
 from backend.database import get_db
-from backend.schemas.products import ProductsIn, ProductsUpdate
+from backend.schemas.products import ProductsIn, ProductsOut, ProductsUpdate
 from fastapi import APIRouter, Depends, HTTPException, status
 from sqlalchemy.orm import Session
 
@@ -14,15 +14,19 @@ def list(
 ) -> list:
     products = products_cruds.list(db=db, shopping_list_id=shopping_list_id)
 
-    return products
+    products_out = [ProductsOut(product.__dict__) for product in products]
+
+    return products_out
 
 
 @router.post("/")
 def create(
     product: ProductsIn,
     db: Session = Depends(get_db),
-) -> None:
-    products_cruds.create(product=product, db=db)
+):
+    product_id = products_cruds.create(product=product, db=db)
+
+    return {"id": product_id}
 
 
 @router.put(

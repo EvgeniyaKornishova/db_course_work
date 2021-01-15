@@ -1,7 +1,7 @@
 from datetime import date, datetime, timedelta
 from typing import Optional
 
-from pydantic import BaseModel
+from pydantic import BaseModel, validator
 
 
 class ActivityIn(BaseModel):
@@ -15,6 +15,12 @@ class ActivityIn(BaseModel):
     stress_points: int
     location_id: Optional[int] = None
 
+    @validator("format")
+    def format_enum(cls, v):
+        if v not in ["очный", "дистанционный"]:
+            raise ValueError("Format must be 'очный' or 'дистанционный'")
+        return v
+
 
 class ActivityUpdate(BaseModel):
     start_time: Optional[datetime] = None
@@ -25,6 +31,18 @@ class ActivityUpdate(BaseModel):
     stress_points: Optional[int] = None
     completed: Optional[str] = None
     location_id: Optional[int] = None
+
+    @validator("format")
+    def format_enum(cls, v):
+        if v and v not in ["очный", "дистанционный"]:
+            raise ValueError("Format must be 'очный' or 'дистанционный'")
+        return v
+
+    @validator("completed")
+    def completed_enum(cls, v):
+        if v and v not in ["выполнено", "не выполнено"]:
+            raise ValueError("Format must be 'выполнено' or 'не выполнено'")
+        return v
 
 
 class Shopping(BaseModel):

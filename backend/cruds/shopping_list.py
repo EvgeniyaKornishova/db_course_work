@@ -11,11 +11,13 @@ def list(db: Session, user_id: int) -> list:
     return shopping_lists
 
 
-def create(db: Session, shopping_list: ShoppingListIn, user_id: int) -> None:
+def create(db: Session, shopping_list: ShoppingListIn, user_id: int) -> int:
     db_shopping_list = ShoppingList(**shopping_list.dict(), user_id=user_id)
 
     db.add(db_shopping_list)
     db.commit()
+
+    return db_shopping_list.id
 
 
 def update(

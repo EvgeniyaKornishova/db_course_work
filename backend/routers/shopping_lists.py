@@ -1,7 +1,8 @@
+from backend.cruds import product as product_cruds
 from backend.cruds import shopping_list as shopping_list_cruds
 from backend.database import get_db
 from backend.routers.dependencies import get_user_id
-from backend.schemas.shopping_lists import ShoppingListIn
+from backend.schemas.shopping_lists import ShoppingListIn, ShoppingListOut
 from fastapi import APIRouter, Depends, HTTPException, status
 from sqlalchemy.orm import Session
 
@@ -12,7 +13,19 @@ router = APIRouter()
 def list(db: Session = Depends(get_db), user_id: int = Depends(get_user_id)) -> list:
     shopping_lists = shopping_list_cruds.list(db=db, user_id=user_id)
 
-    return shopping_lists
+    shopping_lists_out = []
+
+    for shopping_list in shopping_lists:
+        shopping_list_id = shopping_list.id
+
+        products = product_cruds.list(db, shopping_list_id)
+
+        sl_out_schema = ShoppingListOut(**shopping_list.__dict__)
+        sl_out_schema.products = products
+
+        shopping_lists_out.append(sl_out_schema)
+
+    return shopping_lists_out
 
 
 @router.post("/")
@@ -20,8 +33,12 @@ def create(
     shopping_list: ShoppingListIn,
     user_id: int = Depends(get_user_id),
     db: Session = Depends(get_db),
-) -> None:
-    shopping_list_cruds.create(shopping_list=shopping_list, user_id=user_id, db=db)
+):
+    shopping_list_id = shopping_list_cruds.create(
+        shopping_list=shopping_list, user_id=user_id, db=db
+    )
+
+    return {"id": shopping_list_id}
 
 
 @router.put(
