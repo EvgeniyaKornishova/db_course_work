@@ -4,7 +4,7 @@ from typing import Optional
 from backend.cruds import activity as activity_cruds
 from backend.database import get_db
 from backend.routers.dependencies import get_user_id
-from backend.schemas.activities import ActivityIn, ActivityUpdate
+from backend.schemas.activities import FullActivityIn, FullActivityUpdate
 from fastapi import APIRouter, Depends, HTTPException, status
 from sqlalchemy.orm import Session
 
@@ -27,7 +27,7 @@ def list(
 
 @router.post("/")
 def create(
-    activity: ActivityIn,
+    activity: FullActivityIn,
     user_id: int = Depends(get_user_id),
     db: Session = Depends(get_db),
 ) -> None:
@@ -44,7 +44,7 @@ def create(
 )
 def update(
     activity_id: int,
-    activity: ActivityUpdate,
+    activity: FullActivityUpdate,
     user_id: int = Depends(get_user_id),
     db: Session = Depends(get_db),
 ) -> None:

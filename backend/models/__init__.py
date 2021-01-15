@@ -78,6 +78,8 @@ class Activity(Base):
     format = Column("формат", String)
     stress_points = Column("влияние_на_уровень_стресса", Integer)
     completed = Column("готовность", String, default="не выполнено")
+    processing_date = Column("дата_выполнения", Date)
+    activity_type = Column("тип", String)
     location_id = Column(
         "id_локации", Integer, ForeignKey("локация.id_локации"), nullable=True
     )
@@ -89,6 +91,7 @@ class Activity(Base):
 
 class Shopping(Base):
     __tablename__ = "поход_в_магазин"
+
     id = Column("id_похода_в_магазин", Integer, primary_key=True)
     shopping_list_id = Column(
         "id_списка_покупок",
@@ -96,9 +99,76 @@ class Shopping(Base):
         ForeignKey("список_покупок.id_списка_покупок"),
         nullable=True,
     )
+
+    shopping_list = relationship("ShoppingList", back_populates="shopping")
+
     activity_id = Column(
         "id_активности", Integer, ForeignKey("активность.id_активности")
     )
 
     activity = relationship("Activity")
-    shopping_list = relationship("ShoppingList", back_populates="shopping")
+
+
+class Studying(Base):
+    __tablename__ = "учебное_занятие"
+
+    id = Column("id_учебного_занятия", Integer, primary_key=True)
+    room = Column("аудитория", String)
+    teacher = Column("преподаватель", String)
+    type = Column("тип", String)
+
+    activity_id = Column(
+        "id_активности", Integer, ForeignKey("активность.id_активности")
+    )
+
+    activity = relationship("Activity")
+
+
+class Sport(Base):
+    __tablename__ = "спортивное_занятие"
+
+    id = Column("id_спортивного_занятия", Integer, primary_key=True)
+    type = Column("вид_занятия", String)
+
+    activity_id = Column(
+        "id_активности", Integer, ForeignKey("активность.id_активности")
+    )
+
+    activity = relationship("Activity")
+
+
+class Work(Base):
+    __tablename__ = "рабочая_смена"
+
+    id = Column("id_рабочей_смены", Integer, primary_key=True)
+
+    activity_id = Column(
+        "id_активности", Integer, ForeignKey("активность.id_активности")
+    )
+
+    activity = relationship("Activity")
+
+
+class OtherActivity(Base):
+    __tablename__ = "другое"
+
+    id = Column("id_другого", Integer, primary_key=True)
+    description = Column("описание_активности", String)
+
+    activity_id = Column(
+        "id_активности", Integer, ForeignKey("активность.id_активности")
+    )
+
+    activity = relationship("Activity")
+
+
+class Meeting(Base):
+    __tablename__ = "встреча"
+
+    id = Column("id_встречи", Integer, primary_key=True)
+
+    activity_id = Column(
+        "id_активности", Integer, ForeignKey("активность.id_активности")
+    )
+
+    activity = relationship("Activity")
