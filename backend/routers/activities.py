@@ -2,9 +2,15 @@ from datetime import datetime
 from typing import Optional
 
 from backend.cruds import activity as activity_cruds
+from backend.cruds import user as user_cruds
 from backend.database import get_db
 from backend.routers.dependencies import get_user_id
-from backend.schemas.activities import FullActivityIn, FullActivityUpdate
+from backend.schemas.activities import (
+    ActivityUpdate,
+    FullActivityIn,
+    FullActivityUpdate,
+)
+from backend.schemas.users import UserUpdate
 from fastapi import APIRouter, Depends, HTTPException, status
 from sqlalchemy.orm import Session
 
@@ -83,3 +89,50 @@ def delete(
             status_code=status.HTTP_400_BAD_REQUEST,
             detail="Activity with specified id not found",
         )
+
+
+@router.post(
+    "/{activity_id}/complete",
+    responses={
+        status.HTTP_400_BAD_REQUEST: {
+            "description": "Activity with specified id not found"
+        }
+    },
+)
+def complete_task(
+    activity_id: int,
+    user_id: int = Depends(get_user_id),
+    db: Session = Depends(get_db),
+):
+    activity = activity_cruds.get(db=db, user_id=user_id, activity_id=activity_id)
+
+    if activity is None:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="Activity with specified id not found",
+        )
+
+    if activity.completed == "выполнено":
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="Activity already completed",
+        )
+
+    activity_cruds.update(
+        activity_id=activity_id,
+        activity=ActivityUpdate(completed=True),
+        user_id=user_id,
+        db=db,
+    )
+
+    activity = activity_cruds.get(db=db, user_id=user_id, activity_id=activity_id)
+
+    user = user_cruds.get(db=db, user_id=user_id)
+
+    new_stress = user.cur_stress_lvl + activity.stress_points
+
+    user_cruds.update(
+        db=db, user=UserUpdate(cur_stress_lvl=new_stress), user_id=user_id
+    )
+
+    return {"cur_stress_lvl": new_stress}

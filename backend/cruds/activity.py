@@ -1,10 +1,9 @@
 from datetime import date, datetime, timedelta
-from typing import List, Optional
+from typing import Optional
 
 import pytz
 from backend import models
 from backend.schemas import activities as schemas
-from pydantic.decorator import ALT_V_ARGS
 from sqlalchemy.orm import Session
 
 utc = pytz.UTC
@@ -117,6 +116,21 @@ def is_periodic_activity_in_interval(
     return False
 
 
+def get(
+    db: Session,
+    user_id: int,
+    activity_id: int,
+) -> Optional[schemas.ActivityOut]:
+    activity = (
+        db.query(models.Activity)
+        .filter(models.Activity.user_id == user_id)
+        .filter(models.Activity.id == activity_id)
+        .one_or_none()
+    )
+
+    return activity
+
+
 def list(
     db: Session,
     user_id: int,
@@ -182,20 +196,29 @@ def expand_activities_in_period(_activities, start_time: datetime, end_time: dat
         return activities
 
 
+def activity_to_plan_element(activity):
+    start = activity.start_time.total_seconds()
+    end = activity.end_time.total_seconds()
+    len = activity.duration.total_seconds()
+    cost = activity.stress_points
+
+    return schemas.Plan(id=activity.id, start=start, end=end, len=len, cost=cost)
+
+
 def make_plan(db: Session, user_id: int, plan_date: date):
     start_time = datetime.combine(plan_date, datetime.min.time())
     end_time = datetime.combine(plan_date, datetime.max.time())
 
-    activities = list(db, user_id, start_time, end_time, completed=True)
+    activities = list(db, user_id, start_time, end_time, completed=False)
 
     activities = expand_activities_in_period(activities, start_time, end_time)
 
-    plans = [schemas.Plan(activity) for activity in activities]
+    plans = [activity_to_plan_element(activity) for activity in activities]
 
-    plans.sort(key=lambda activity: activity.start_time)
+    plans.sort(key=lambda activity: activity.start)
 
+    print(plans)
 
-# sort by start_time
 
 # shift activities
 

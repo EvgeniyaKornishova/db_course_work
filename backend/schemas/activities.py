@@ -38,10 +38,16 @@ class ActivityUpdate(BaseModel):
             raise ValueError("Format must be 'очный' or 'дистанционный'")
         return v
 
-    @validator("completed")
+    @validator("completed", pre=True)
     def completed_enum(cls, v):
         if v and v not in ["выполнено", "не выполнено"]:
-            raise ValueError("Format must be 'выполнено' or 'не выполнено'")
+            if isinstance(v, bool):
+                if v:
+                    v = "выполнено"
+                else:
+                    v = "не выполнено"
+            else:
+                raise ValueError("Format must be 'выполнено' or 'не выполнено'")
         return v
 
 
@@ -126,17 +132,9 @@ class MeetingOut(ActivityOut):
     pass
 
 
-class PlanBase(BaseModel):
+class Plan(BaseModel):
     id: int
-    start_time: datetime
-    end_time: datetime
-    duration: timedelta
-    format: str
-    activity_type: str
-    stress_points: int
-    location_id: Optional[int] = None
-    completed: str
-
-
-class Plan(PlanBase, Shopping, Studying, Sport, Work, OtherActivity, Meeting):
-    pass
+    start: int
+    end: int
+    len: int
+    cost: int
