@@ -1,10 +1,13 @@
 from datetime import date, datetime, timedelta
 from typing import List, Optional
 
+import pytz
 from backend import models
 from backend.schemas import activities as schemas
 from pydantic.decorator import ALT_V_ARGS
 from sqlalchemy.orm import Session
+
+utc = pytz.UTC
 
 
 def get_activity_in_schema(type: str):
@@ -96,8 +99,8 @@ def is_periodic_activity_in_interval(
     time_window = (activity.end_time - activity.start_time) % timedelta(days=1)
 
     for time in [activity.start_time, activity.end_time, activity.period]:
-        _start_time = time
-        _end_time = _start_time + time_window
+        _start_time = time.replace(tzinfo=utc)
+        _end_time = (_start_time + time_window).replace(tzinfo=utc)
 
         if start_time and end_time:
             if _start_time >= end_time:
