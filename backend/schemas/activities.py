@@ -124,3 +124,19 @@ class OtherActivityOut(ActivityOut):
 
 class MeetingOut(ActivityOut):
     pass
+
+
+class PlanBase(BaseModel):
+    id: int
+    start_time: datetime
+    end_time: datetime
+    duration: timedelta
+    format: str
+    activity_type: str
+    stress_points: int
+    location_id: Optional[int] = None
+    completed: str
+
+
+class Plan(PlanBase, Shopping, Studying, Sport, Work, OtherActivity, Meeting):
+    pass

@@ -9,5 +9,6 @@ class ShoppingListIn(BaseModel):
 
 
 class ShoppingListOut(BaseModel):
+    id: int
     name: str
     products: List[ProductsOut] = []
