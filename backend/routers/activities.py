@@ -6,6 +6,7 @@ from backend.cruds import user as user_cruds
 from backend.database import get_db
 from backend.routers.dependencies import get_user_id
 from backend.schemas.activities import (
+    ActivityComplition,
     ActivityUpdate,
     FullActivityIn,
     FullActivityUpdate,
@@ -101,9 +102,12 @@ def delete(
 )
 def complete_task(
     activity_id: int,
+    _completed: ActivityComplition,
     user_id: int = Depends(get_user_id),
     db: Session = Depends(get_db),
 ):
+    completed = _completed.completed
+
     activity = activity_cruds.get(db=db, user_id=user_id, activity_id=activity_id)
 
     if activity is None:
@@ -112,15 +116,24 @@ def complete_task(
             detail="Activity with specified id not found",
         )
 
-    if activity.completed == "выполнено":
-        raise HTTPException(
-            status_code=status.HTTP_400_BAD_REQUEST,
-            detail="Activity already completed",
-        )
+    if completed:
+        if activity.completed == "выполнено":
+            raise HTTPException(
+                status_code=status.HTTP_400_BAD_REQUEST,
+                detail="Activity already completed",
+            )
+    else:
+        if activity.completed == "не выполнено":
+            raise HTTPException(
+                status_code=status.HTTP_400_BAD_REQUEST,
+                detail="Activity haven't completed yet",
+            )
+
+    completed_text = "выполнено" if completed else "не выполнено"
 
     activity_cruds.update(
         activity_id=activity_id,
-        activity=ActivityUpdate(completed=True),
+        activity=ActivityUpdate(completed=completed_text),
         user_id=user_id,
         db=db,
     )
@@ -129,7 +142,11 @@ def complete_task(
 
     user = user_cruds.get(db=db, user_id=user_id)
 
-    new_stress = user.cur_stress_lvl + activity.stress_points
+    new_stress = user.cur_stress_lvl
+    if completed:
+        new_stress += activity.stress_points
+    else:
+        new_stress -= activity.stress_points
 
     user_cruds.update(
         db=db, user=UserUpdate(cur_stress_lvl=new_stress), user_id=user_id

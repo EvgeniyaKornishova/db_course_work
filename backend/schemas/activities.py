@@ -41,13 +41,7 @@ class ActivityUpdate(BaseModel):
     @validator("completed", pre=True)
     def completed_enum(cls, v):
         if v and v not in ["выполнено", "не выполнено"]:
-            if isinstance(v, bool):
-                if v:
-                    v = "выполнено"
-                else:
-                    v = "не выполнено"
-            else:
-                raise ValueError("Format must be 'выполнено' or 'не выполнено'")
+            raise ValueError("Format must be 'выполнено' or 'не выполнено'")
         return v
 
 
@@ -139,3 +133,7 @@ class Plan(BaseModel):
     len: int
     cost: int
     important: bool = True
+
+
+class ActivityComplition(BaseModel):
+    completed: bool = True
