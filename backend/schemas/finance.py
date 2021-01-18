@@ -1,4 +1,4 @@
-from datetime import date
+import datetime
 from typing import Optional
 
 from pydantic import BaseModel, validator
@@ -9,7 +9,7 @@ class Finance(BaseModel):
     type: str
     cost: float
     item: str
-    date: date
+    date: datetime.date
     user_id: int
 
     @validator("type")
@@ -23,7 +23,7 @@ class FinanceIn(BaseModel):
     type: str
     cost: float
     item: str
-    date: date
+    date: datetime.date
 
     @validator("type")
     def type_enum(cls, v):
@@ -36,10 +36,7 @@ class FinanceUpdate(BaseModel):
     type: Optional[str] = None
     cost: Optional[float] = None
     item: Optional[str] = None
-    date: Optional[date] = None
-
-    class Config:
-        arbitrary_types_allowed = True
+    date: Optional[datetime.date] = None
 
     @validator("type")
     def type_enum(cls, v):
