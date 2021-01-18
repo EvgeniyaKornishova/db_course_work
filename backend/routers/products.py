@@ -1,8 +1,13 @@
+from datetime import date
+
+from backend.cruds import finance as finance_cruds
 from backend.cruds import product as products_cruds
 from backend.cruds import user as user_cruds
 from backend.database import get_db
 from backend.routers.dependencies import get_user_id
+from backend.schemas.finance import FinanceIn
 from backend.schemas.products import ProductsIn, ProductsOut, ProductsUpdate
+from backend.schemas.users import UserUpdate
 from fastapi import APIRouter, Depends, HTTPException, status
 from sqlalchemy.orm import Session
 
@@ -74,16 +79,29 @@ def delete(product_id: int, db: Session = Depends(get_db)) -> None:
 
 @router.post("/{product_id}/complete")
 def complete(
-    product_id: int, db: Session = Depends(get_db), user_id: int = Depends(get_user_id)
+    product_id: int,
+    db: Session = Depends(get_db),
+    user_id: int = Depends(get_user_id),
 ) -> None:
+
     products_cruds.update(
         db=db, product_id=product_id, product=ProductsUpdate(approved="подтвержден")
     )
 
     product = products_cruds.get(db=db, product_id=product_id)
 
-    # update user's balance
+    cost = product.price * product.amount
+
+    finance_cruds.create(
+        db,
+        user_id=user_id,
+        finance=FinanceIn(
+            type="расход", cost=cost, item=f"Попкупка {product.name}", date=date.today()
+        ),
+    )
+
     user = user_cruds.get(db, user_id)
-    balance = user.balance - product.price * product.amount
+
+    balance = user.balance - cost
 
     user_cruds.update(db, UserUpdate(balance=balance), user_id=user_id)

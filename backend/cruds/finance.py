@@ -24,6 +24,18 @@ def list(
     return finances
 
 
+def get(db: Session, user_id: int, finance_id: int) -> schemas.Finance:
+
+    finance = (
+        db.query(models.Finance)
+        .filter(models.Finance.user_id == user_id)
+        .filter(models.Finance.id == finance_id)
+        .one_or_none()
+    )
+
+    return finance
+
+
 def create(db: Session, user_id: int, finance: schemas.FinanceIn) -> None:
     finance = models.Finance(**finance.dict(), user_id=user_id)
 
@@ -31,3 +43,21 @@ def create(db: Session, user_id: int, finance: schemas.FinanceIn) -> None:
     db.commit()
 
     return finance.id
+
+
+def update(
+    db: Session, user_id: int, finance_id: int, finance: schemas.FinanceUpdate
+) -> None:
+    db.query(models.Finance).filter(models.Finance.user_id == user_id).filter(
+        models.Finance.id == finance_id
+    ).update(finance.dict(exclude_none=True))
+
+    db.commit()
+
+
+def delete(db: Session, user_id: int, finance_id: int) -> None:
+    db.query(models.Finance).filter(models.Finance.user_id == user_id).filter(
+        models.Finance.id == finance_id
+    ).delete()
+
+    db.commit()

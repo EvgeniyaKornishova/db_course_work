@@ -1,16 +1,14 @@
 from datetime import date
-from os import stat
 from typing import List, Optional
 
 from backend.cruds import finance as finance_cruds
 from backend.cruds import user as user_cruds
 from backend.routers.dependencies import get_db, get_user_id
-from backend.schemas.finance import Finance, FinanceIn
+from backend.schemas.finance import Finance, FinanceIn, FinanceUpdate
 from backend.schemas.users import UserUpdate
 from fastapi import APIRouter, Depends, status
 from fastapi.exceptions import HTTPException
 from sqlalchemy.orm import Session
-from starlette.status import HTTP_100_CONTINUE
 
 router = APIRouter()
 
@@ -55,3 +53,44 @@ def create(
     user_cruds.update(db, UserUpdate(balance=balance), user_id=user_id)
 
     return {"id": id}
+
+
+@router.put("/{finance_id}")
+def update(
+    finance: FinanceUpdate,
+    finance_id: int,
+    db: Session = Depends(get_db),
+    user_id: int = Depends(get_user_id),
+) -> List[Finance]:
+    old_finance = finance_cruds.get(db, user_id, finance_id)
+
+    old_type = old_finance.type == "доход"
+    old_cost = old_finance.cost
+
+    finance_cruds.update(db, user_id, finance_id, finance)
+
+    new_finance = finance_cruds.get(db, user_id, finance_id)
+
+    new_type = new_finance.type == "доход"
+    new_cost = new_finance.cost
+
+    financial_diff = new_cost * (1 if new_type else -1) - old_cost * (
+        1 if old_type else -1
+    )
+
+    # update user's balance
+    user = user_cruds.get(db, user_id)
+    balance = user.balance
+
+    balance += financial_diff
+
+    user_cruds.update(db, UserUpdate(balance=balance), user_id=user_id)
+
+
+@router.delete("/{finance_id}")
+def delete(
+    finance_id: int,
+    db: Session = Depends(get_db),
+    user_id: int = Depends(get_user_id),
+) -> None:
+    finance_cruds.delete(db, user_id, finance_id)
