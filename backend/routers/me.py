@@ -39,7 +39,10 @@ def generate_plan(
     sch_date: date, db: Session = Depends(get_db), user_id: int = Depends(get_user_id)
 ) -> None:
     if sch_date < date.today():
-        raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, "Schedule can be generated only for the future days")
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="Schedule can be generated only for the future days",
+        )
 
     try:
         plan = make_plan(db=db, user_id=user_id, plan_date=sch_date)
