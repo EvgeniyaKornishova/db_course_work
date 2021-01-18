@@ -64,7 +64,7 @@ def is_periodic(activity) -> bool:
 def update_periodic_activity(activity) -> None:
     while (
         activity.processing_date < date.today()
-        or activity.processing_date <= activity.end_time.date()
+        and activity.processing_date <= activity.end_time.date()
     ):
         activity.processing_date += activity.period
 
