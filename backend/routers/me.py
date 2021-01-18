@@ -1,9 +1,12 @@
 from datetime import date, datetime
+from typing import List, Optional
 
 from backend.cruds import activity as activitiy_cruds
+from backend.cruds import finance as finance_cruds
 from backend.cruds import user as user_cruds
 from backend.routers.dependencies import get_db, get_user_id
-from backend.schemas.users import UserStressIn, UserUpdate
+from backend.schemas.finance import Finance
+from backend.schemas.users import UserBalanceIn, UserStressIn, UserUpdate
 from backend.utils.schedule import make_plan
 from fastapi import APIRouter, Depends
 from sqlalchemy.orm import Session
@@ -49,3 +52,26 @@ def generate_plan(
         activity.end_time = datetime.fromtimestamp(plan[activity.id].end)
 
     return schedule
+
+
+@router.get("/finances")
+def list_finances(
+    start_date: Optional[date] = None,
+    end_date: Optional[date] = None,
+    db: Session = Depends(get_db),
+    user_id: int = Depends(get_user_id),
+) -> List[Finance]:
+    finances = finance_cruds.list(
+        db=db, user_id=user_id, start_date=start_date, end_date=end_date
+    )
+
+    return finances
+
+
+@router.put("/balance")
+def change_balance(
+    _balance: UserBalanceIn,
+    db: Session = Depends(get_db),
+    user_id: int = Depends(get_user_id),
+) -> None:
+    user_cruds.update(db=db, user=UserUpdate(**_balance.dict()), user_id=user_id)

@@ -7,6 +7,7 @@ class User(BaseModel):
     id: int
     max_stress_lvl: int
     cur_stress_lvl: int
+    balance: float
 
     class Config:
         orm_mode = True
@@ -15,7 +16,12 @@ class User(BaseModel):
 class UserUpdate(BaseModel):
     max_stress_lvl: Optional[int] = None
     cur_stress_lvl: Optional[int] = None
+    balance: float
 
 
 class UserStressIn(BaseModel):
     max_stress_lvl: int
+
+
+class UserBalanceIn(BaseModel):
+    balance: float

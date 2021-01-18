@@ -18,6 +18,7 @@ class User(Base):
     id = Column("id_пользователя", Integer, primary_key=True)
     max_stress_lvl = Column("макс_допустимый_ус", Integer, default=600)
     cur_stress_lvl = Column("текущий_ус", Integer, default=0)
+    balance = Column("текущий_баланс", Float, default=0)
 
     activities = relationship("Activity", back_populates="user")
 
@@ -172,3 +173,18 @@ class Meeting(Base):
     )
 
     activity = relationship("Activity")
+
+
+class Finance(Base):
+    __tablename__ = "финансы"
+
+    id = Column("id_финансовой_операции", Integer, primary_key=True)
+    type = Column("тип", String)
+    cost = Column("сумма", Float)
+    item = Column("статья", String)
+    date = Column("дата_совершения", DateTime)
+    user_id = Column(
+        "id_пользователя", Integer, ForeignKey("пользователь.id_пользователя")
+    )
+
+    user = relationship("User")
