@@ -5,7 +5,8 @@ from backend.cruds import user as user_cruds
 from backend.routers.dependencies import get_db, get_user_id
 from backend.schemas.users import UserBalanceIn, UserStressIn, UserUpdate
 from backend.utils.schedule import make_plan
-from fastapi import APIRouter, Depends
+from fastapi import APIRouter, Depends, status
+from fastapi.exceptions import HTTPException
 from sqlalchemy.orm import Session
 
 router = APIRouter()
@@ -37,7 +38,10 @@ def update_max_stress_lvl(
 def generate_plan(
     sch_date: date, db: Session = Depends(get_db), user_id: int = Depends(get_user_id)
 ) -> None:
-    plan = make_plan(db=db, user_id=user_id, plan_date=sch_date)
+    try:
+        plan = make_plan(db=db, user_id=user_id, plan_date=sch_date)
+    except ValueError as e:
+        raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail=str(e))
 
     # get fulls
     schedule = [activitiy_cruds.get(db, user_id, id, full=True) for id in plan]

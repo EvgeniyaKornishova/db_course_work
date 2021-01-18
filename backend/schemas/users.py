@@ -16,7 +16,7 @@ class User(BaseModel):
 class UserUpdate(BaseModel):
     max_stress_lvl: Optional[int] = None
     cur_stress_lvl: Optional[int] = None
-    balance: float
+    balance: Optional[float] = None
 
 
 class UserStressIn(BaseModel):

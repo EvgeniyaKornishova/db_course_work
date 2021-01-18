@@ -11,6 +11,12 @@ def list(db: Session, shopping_list_id: int) -> list:
     return products
 
 
+def get(db: Session, product_id: int) -> list:
+    products = db.query(Products).filter(Products.id == product_id).all()
+
+    return products
+
+
 def create(db: Session, product: ProductsIn) -> int:
     db_product = Products(**product.dict())
 

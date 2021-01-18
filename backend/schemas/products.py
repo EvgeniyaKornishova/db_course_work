@@ -1,7 +1,7 @@
 from datetime import datetime
 from typing import Optional
 
-from pydantic import BaseModel
+from pydantic import BaseModel, validator
 
 
 class ProductsOut(BaseModel):
@@ -12,6 +12,12 @@ class ProductsOut(BaseModel):
     deadline: datetime
     approved: str
     shopping_list_id: int
+
+    @validator("approved")
+    def approved_enum(cls, v):
+        if v not in ["подтвержден", "не подтвержден"]:
+            raise ValueError("Format must be 'подтвержден' or 'не подтвержден'")
+        return v
 
 
 class ProductsIn(BaseModel):
@@ -29,3 +35,9 @@ class ProductsUpdate(BaseModel):
     deadline: Optional[datetime] = None
     approved: Optional[str] = None
     shopping_list_id: Optional[int] = None
+
+    @validator("approved")
+    def approved_enum(cls, v):
+        if v and v not in ["подтвержден", "не подтвержден"]:
+            raise ValueError("Format must be 'подтвержден' or 'не подтвержден'")
+        return v
