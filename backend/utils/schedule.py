@@ -232,7 +232,7 @@ def make_plan(db: Session, user_id: int, plan_date: date):
     start_time = datetime.combine(plan_date, datetime.min.time())
     end_time = datetime.combine(plan_date + timedelta(days=1), datetime.min.time())
 
-    activities = activity_crud.list(db, user_id, start_time, end_time, completed=False)
+    activities = activity_crud.list(db, user_id, start_time, end_time)
 
     activities = expand_activities_in_period(activities, start_time, end_time)
 
