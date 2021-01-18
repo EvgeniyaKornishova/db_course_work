@@ -1,12 +1,9 @@
 from datetime import date, datetime, timedelta
 from typing import Optional
 
-import pytz
 from backend import models
 from backend.schemas import activities as schemas
 from sqlalchemy.orm import Session
-
-utc = pytz.UTC
 
 
 def get_activity_in_schema(type: str):
@@ -97,15 +94,16 @@ def is_periodic_activity_in_interval(
 
     time_window = (activity.end_time - activity.start_time) % timedelta(days=1)
 
-    for time in [activity.start_time, activity.end_time, activity.period]:
-        _start_time = time.replace(tzinfo=utc)
-        _end_time = (_start_time + time_window).replace(tzinfo=utc)
+    time = activity.start_time
+    while time < activity.end_time:
+        _start_time = time
+        _end_time = _start_time + time_window
 
         if start_time and end_time:
             if _start_time >= end_time:
                 return False
 
-            if _start_time < end_time and _end_time > start_time:
+            if _end_time > start_time:
                 return True
         elif start_time:
             if _end_time > start_time:
@@ -113,13 +111,13 @@ def is_periodic_activity_in_interval(
         elif end_time:
             return _start_time < end_time
 
+        time += activity.period
+
     return False
 
 
 def get(
-    db: Session,
-    user_id: int,
-    activity_id: int,
+    db: Session, user_id: int, activity_id: int, full: bool = False
 ) -> Optional[schemas.ActivityOut]:
     activity = (
         db.query(models.Activity)
@@ -127,6 +125,9 @@ def get(
         .filter(models.Activity.id == activity_id)
         .one_or_none()
     )
+
+    if full:
+        activity = get_full_activity(db, activity)
 
     return activity
 
@@ -166,65 +167,6 @@ def list(
     out_activities = [get_full_activity(db, activity) for activity in activities]
 
     return out_activities
-
-
-def expand_activities_in_period(_activities, start_time: datetime, end_time: datetime):
-    activities = []
-
-    for activity in _activities:
-        if is_periodic(activity):
-
-            time_window = (activity.end_time - activity.start_time) % timedelta(days=1)
-
-            for time in [activity.start_time, activity.end_time, activity.period]:
-                a_start_time = time
-                a_end_time = a_start_time + time_window
-
-                if a_start_time >= end_time:
-                    break
-
-                if a_start_time < end_time and a_end_time > start_time:
-                    _activity = activity
-
-                    _activity.start_time = a_start_time
-                    _activity.end_time = a_end_time
-
-                    activities.append(_activity)
-        else:
-            activities.append(activity)
-
-        return activities
-
-
-def activity_to_plan_element(activity):
-    start = activity.start_time.total_seconds()
-    end = activity.end_time.total_seconds()
-    len = activity.duration.total_seconds()
-    cost = activity.stress_points
-
-    return schemas.Plan(id=activity.id, start=start, end=end, len=len, cost=cost)
-
-
-def make_plan(db: Session, user_id: int, plan_date: date):
-    start_time = datetime.combine(plan_date, datetime.min.time())
-    end_time = datetime.combine(plan_date, datetime.max.time())
-
-    activities = list(db, user_id, start_time, end_time, completed=False)
-
-    activities = expand_activities_in_period(activities, start_time, end_time)
-
-    plans = [activity_to_plan_element(activity) for activity in activities]
-
-    plans.sort(key=lambda activity: activity.start)
-
-    print(plans)
-
-
-# shift activities
-
-# search collisions
-
-# calculate stress
 
 
 def create(db: Session, activity: schemas.FullActivityIn, user_id: int) -> None:

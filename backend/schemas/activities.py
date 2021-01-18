@@ -138,3 +138,4 @@ class Plan(BaseModel):
     end: int
     len: int
     cost: int
+    important: bool = True

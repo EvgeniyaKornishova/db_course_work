@@ -1,9 +1,10 @@
-from datetime import date
+from datetime import date, datetime
 
 from backend.cruds import activity as activitiy_cruds
 from backend.cruds import user as user_cruds
 from backend.routers.dependencies import get_db, get_user_id
 from backend.schemas.users import UserStressIn, UserUpdate
+from backend.utils.schedule import make_plan
 from fastapi import APIRouter, Depends
 from sqlalchemy.orm import Session
 
@@ -32,11 +33,19 @@ def update_max_stress_lvl(
     user_cruds.update(db=db, user=UserUpdate(**_max_stress_lvl.dict()), user_id=user_id)
 
 
-# @router.get("/plan")
-# def generate_plan(
-#     db: Session = Depends(get_db), user_id: int = Depends(get_user_id)
-# ) -> None:
-#     # TODO: make work with date
-#     activitiy_cruds.make_plan(
-#         db=db, user_id=user_id, plan_date=date(year=2021, month=1, day=30)
-#     )
+@router.get("/schedule")
+def generate_plan(
+    sch_date: date, db: Session = Depends(get_db), user_id: int = Depends(get_user_id)
+) -> None:
+    plan = make_plan(db=db, user_id=user_id, plan_date=sch_date)
+
+    # get fulls
+    schedule = [activitiy_cruds.get(db, user_id, id, full=True) for id in plan]
+
+    # change time window
+
+    for activity in schedule:
+        activity.start_time = datetime.fromtimestamp(plan[activity.id].start)
+        activity.end_time = datetime.fromtimestamp(plan[activity.id].end)
+
+    return schedule
