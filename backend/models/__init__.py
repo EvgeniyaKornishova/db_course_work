@@ -182,7 +182,7 @@ class Finance(Base):
     type = Column("тип", String)
     cost = Column("сумма", Float)
     item = Column("статья", String)
-    date = Column("дата_совершения", DateTime)
+    date = Column("дата_совершения", Date)
     user_id = Column(
         "id_пользователя", Integer, ForeignKey("пользователь.id_пользователя")
     )

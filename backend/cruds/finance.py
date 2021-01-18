@@ -22,3 +22,12 @@ def list(
     finances = db.query(models.Finance).filter(*queries).all()
 
     return finances
+
+
+def create(db: Session, user_id: int, finance: schemas.FinanceIn) -> None:
+    finance = models.Finance(**finance.dict(), user_id=user_id)
+
+    db.add(finance)
+    db.commit()
+
+    return finance.id

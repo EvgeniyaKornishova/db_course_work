@@ -1,11 +1,8 @@
 from datetime import date, datetime
-from typing import List, Optional
 
 from backend.cruds import activity as activitiy_cruds
-from backend.cruds import finance as finance_cruds
 from backend.cruds import user as user_cruds
 from backend.routers.dependencies import get_db, get_user_id
-from backend.schemas.finance import Finance
 from backend.schemas.users import UserBalanceIn, UserStressIn, UserUpdate
 from backend.utils.schedule import make_plan
 from fastapi import APIRouter, Depends
@@ -54,18 +51,16 @@ def generate_plan(
     return schedule
 
 
-@router.get("/finances")
-def list_finances(
-    start_date: Optional[date] = None,
-    end_date: Optional[date] = None,
+@router.get("/balance")
+def get_balance(
     db: Session = Depends(get_db),
     user_id: int = Depends(get_user_id),
-) -> List[Finance]:
-    finances = finance_cruds.list(
-        db=db, user_id=user_id, start_date=start_date, end_date=end_date
-    )
+) -> None:
+    user = user_cruds.get(db=db, user_id=user_id)
 
-    return finances
+    return {
+        "balance": user.balance,
+    }
 
 
 @router.put("/balance")
