@@ -15,9 +15,9 @@ def list(
     queries = [models.Finance.user_id == user_id]
 
     if start_date:
-        queries.append(models.Finance.date > start_date)
+        queries.append(models.Finance.date >= start_date)
     if end_date:
-        queries.append(models.Finance.date < end_date)
+        queries.append(models.Finance.date <= end_date)
 
     finances = db.query(models.Finance).filter(*queries).all()
 
