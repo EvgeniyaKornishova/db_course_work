@@ -93,4 +93,19 @@ def delete(
     db: Session = Depends(get_db),
     user_id: int = Depends(get_user_id),
 ) -> None:
+    finance = finance_cruds.get(db, user_id, finance_id)
+
+    # update user's balance
+    user = user_cruds.get(db, user_id)
+    balance = user.balance
+
+    type = finance.type == "доход"
+    cost = finance.cost
+
+    financial_diff = cost * (1 if type else -1)
+
+    balance -= financial_diff
+
+    user_cruds.update(db, UserUpdate(balance=balance), user_id=user_id)
+
     finance_cruds.delete(db, user_id, finance_id)
