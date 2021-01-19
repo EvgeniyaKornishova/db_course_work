@@ -12,9 +12,9 @@ def list(db: Session, shopping_list_id: int) -> list:
 
 
 def get(db: Session, product_id: int) -> list:
-    products = db.query(Products).filter(Products.id == product_id).all()
+    product = db.query(Products).filter(Products.id == product_id).one_or_none()
 
-    return products
+    return product
 
 
 def create(db: Session, product: ProductsIn) -> int:
